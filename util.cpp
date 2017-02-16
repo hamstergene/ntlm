@@ -120,8 +120,8 @@ unsigned long long create_timestamp()
     * calc Timestamp
     * the windows epoch starts 1601-01-01T00:00:00Z. It's 11644473600 seconds before the UNIX/Linux epoch (1970-01-01T00:00:00Z). The Windows ticks are in 100 nanoseconds. 
     */	
-    unsigned long windows_tick = 10000000;
-    unsigned long win_unix_time_diff = 11644473600;
+    unsigned long long windows_tick = 10000000;
+    unsigned long long win_unix_time_diff = 11644473600ULL;
     unsigned long long timestamp;
     time_t cur = time(NULL);
     time_t win_cur = cur + win_unix_time_diff;

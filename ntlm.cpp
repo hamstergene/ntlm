@@ -2,6 +2,7 @@
 #include "openssl/rand.h"
 #include <cstring>
 #include <stdio.h>
+#include <strings.h>
 
 string make_type1_msg(string domain, string host, int ntlm_resp_type)
 {
