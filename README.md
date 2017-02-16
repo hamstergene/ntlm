@@ -1,7 +1,7 @@
 Overview
 ---------
 This is an implementation of ntlm negotiation message using C++.
-So, you can use it to pass ntlm authentication in linux platform.
+So, you can use it to pass ntlm authentication in linux platform. (Note: This project can also pass compiling on windows, but I didn't run any test.)
 Currently, I don't implement the session security part. But you can still use it to pass ntlm authentication(include ntlmv1, ntlm2session, and ntlmv2).
 
 Usage

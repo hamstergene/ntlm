@@ -1,7 +1,6 @@
 #include "ntlm.h"
 #include "openssl/rand.h"
 #include <cstring>
-#include <strings.h>
 
 string make_type1_msg(string domain, string host, int ntlm_resp_type)
 {
@@ -11,7 +10,7 @@ string make_type1_msg(string domain, string host, int ntlm_resp_type)
     size_t hst_len = upper_host.length();    
     
     struct Type1Message msg1;
-    bzero(&msg1, MSG1_SIZE);
+    memset(&msg1, 0, MSG1_SIZE);
     
     strcpy(msg1.signature, ASCII_STR(NTLMSSP_SIGNATURE));
     
@@ -36,7 +35,7 @@ string make_type1_msg(string domain, string host, int ntlm_resp_type)
     size_t buff_size = MSG1_SIZE + dom_len + hst_len;
     char *buff = NULL;
     buff = new char[buff_size];
-    bzero(buff, buff_size);
+    memset(buff, 0, buff_size);
     memmove(buff, &msg1, MSG1_SIZE);
     if(0 != dom_len)
     	memmove(buff + MSG1_SIZE, ASCII_STR(upper_domain.c_str()), dom_len);
@@ -46,7 +45,7 @@ string make_type1_msg(string domain, string host, int ntlm_resp_type)
     
     size_t base64_len = BASE64_ENCODE_LENGTH(buff_size) + 1;
     char *buff_base64 = new char[base64_len];
-    bzero(buff_base64, base64_len);
+    memset(buff_base64, 0, base64_len);
     base64_encode(buff, buff_base64, buff_size);
     buff_base64[base64_len - 1] = '\0';
     string result(buff_base64);
@@ -68,7 +67,7 @@ string make_type3_msg(string username, string password, string domain, string ho
     bool support_unicode = msg2_handle.support_unicode();
     
     struct Type3Message msg3;
-    bzero(&msg3, MSG3_SIZE);
+    memset(&msg3, 0, MSG3_SIZE);
     uint16_t lm_challenge_resp_len, nt_challenge_resp_len, dom_len, usr_name_len, hst_len;
     uint32_t lm_challenge_resp_off, nt_challenge_resp_off, dom_off, usr_name_off, hst_off;
         
@@ -103,11 +102,11 @@ string make_type3_msg(string username, string password, string domain, string ho
     {
         msg3.flag = to_little_endian((uint32_t) NTLMV1_FLAG);
 
-        bzero(lm_resp, 24);
+        memset(lm_resp, 0, 24);
         calc_lmv1_resp(password, msg2_handle.get_challenge(), lm_resp);
         
         byte *ntlmv1_resp = ntlm_resp;
-        bzero(ntlmv1_resp, 24);
+        memset(ntlmv1_resp, 0, 24);
         calc_ntlmv1_resp(password, msg2_handle.get_challenge(), ntlmv1_resp);
         
     }else if( USE_NTLM2SESSION == ntlm_resp_type)
@@ -115,11 +114,11 @@ string make_type3_msg(string username, string password, string domain, string ho
         msg3.flag = to_little_endian((uint32_t) NTLM2SESSION_FLAG);
         
         byte* ntlm2session_resp = ntlm_resp;
-        bzero(lm_resp, 24);
-        bzero(ntlm2session_resp, 24);
+        memset(lm_resp, 0, 24);
+        memset(ntlm2session_resp, 0, 24);
         
         byte client_nonce[8];
-        bzero(client_nonce, 8);
+        memset(client_nonce, 0, 8);
         create_client_nonce(client_nonce, 8);
         calc_ntlm2session_resp(password, msg2_handle.get_challenge(), client_nonce, lm_resp, ntlm2session_resp);
         
@@ -128,7 +127,7 @@ string make_type3_msg(string username, string password, string domain, string ho
 
         msg3.flag = to_little_endian((uint32_t) NTLM2SESSION_FLAG);
         byte* lmv2_resp = lm_resp;
-        bzero(lmv2_resp, 24);
+        memset(lmv2_resp, 0, 24);
         calc_lmv2_resp(username, password, domain, msg2_handle.get_challenge(), lmv2_resp);
         
         
@@ -138,7 +137,7 @@ string make_type3_msg(string username, string password, string domain, string ho
         size_t ntlmv2_resp_len = 16 + blob_len;// hmac + blob
         byte *ntlmv2_resp = new byte[ntlmv2_resp_len];
         ntlm_resp = ntlmv2_resp;
-        bzero(ntlmv2_resp, ntlmv2_resp_len);
+        memset(ntlmv2_resp, 0, ntlmv2_resp_len);
         
         setup_security_buffer(nt_challenge_resp_len, nt_challenge_resp_off, msg3.nt_challenge_resp_len, msg3.nt_challenge_resp_max_len, msg3.nt_challenge_resp_off, 
             ntlmv2_resp_len, 
@@ -165,9 +164,9 @@ string make_type3_msg(string username, string password, string domain, string ho
         p_username = new char[usr_name_len];
         p_host = new char[hst_len];
         
-        bzero(p_domain, dom_len);
-        bzero(p_username, usr_name_len);
-        bzero(p_host, hst_len);
+        memset(p_domain, 0, dom_len);
+        memset(p_username, 0, usr_name_len);
+        memset(p_host, 0, hst_len);
         
         ascii_to_unicode(domain, p_domain);
         ascii_to_unicode(username, p_username);
@@ -201,14 +200,14 @@ void calc_lmv1_resp(string password, const byte* challenge, byte* lm_resp)
     string upper_pwd = to_uppercase(password);
     size_t upper_pwd_len = upper_pwd.length();
     byte pwd[14];
-    bzero(pwd, 14);
+    memset(pwd, 0, 14);
     size_t mv_len = upper_pwd_len < 14 ? upper_pwd_len : 14;
     memmove(pwd, upper_pwd.c_str(), mv_len);
     byte* pwd_l = pwd;// low 7 bytes
     byte* pwd_h = pwd + 7;// high 7 bytes
     
     byte lm_hash_padded[21];
-    bzero(lm_hash_padded, 21);
+    memset(lm_hash_padded, 0, 21);
     
     byte* lm_hash_l = lm_hash_padded;// low 8 bytes
     byte* lm_hash_h = lm_hash_padded + 8; // high 8 bytes
@@ -218,9 +217,9 @@ void calc_lmv1_resp(string password, const byte* challenge, byte* lm_resp)
     //key data result
     des_enc(pwd_l, &magic, (DES_cblock*)lm_hash_l);
     des_enc(pwd_h, &magic, (DES_cblock*)lm_hash_h);
-    bzero(lm_hash_p, 5);
+    memset(lm_hash_p, 0, 5);
     
-    bzero(lm_resp, 24);
+    memset(lm_resp, 0, 24);
     byte* lm_resp1 = lm_resp;
     byte* lm_resp2 = lm_resp + 8;
     byte* lm_resp3 = lm_resp + 16;
@@ -238,14 +237,14 @@ void calc_lmv1_resp(string password, const byte* challenge, byte* lm_resp)
 void calc_ntlmv1_resp(string password, const byte* challenge, byte* ntlmv1_resp)
 {
     byte ntlmv1_hash_padded[21];
-    bzero(ntlmv1_hash_padded, 21);
-    bzero(ntlmv1_resp, 24);
+    memset(ntlmv1_hash_padded, 0, 21);
+    memset(ntlmv1_resp, 0, 24);
     
     byte ntlmv1_hash[MD4_DIGEST_LENGTH]; // 16-byte
-    bzero(ntlmv1_hash, MD4_DIGEST_LENGTH);
+    memset(ntlmv1_hash, 0, MD4_DIGEST_LENGTH);
     calc_ntlmv1_hash(password, ntlmv1_hash);
     
-    bzero(ntlmv1_hash_padded, 21);
+    memset(ntlmv1_hash_padded, 0, 21);
     memmove(ntlmv1_hash_padded, ntlmv1_hash, MD4_DIGEST_LENGTH);
     
     byte* ntlmv1_resp1 = ntlmv1_resp;
@@ -264,26 +263,26 @@ void calc_ntlmv1_resp(string password, const byte* challenge, byte* ntlmv1_resp)
 
 void calc_ntlm2session_resp(string password, const byte* challenge, byte* client_nonce, byte* lm_resp, byte* ntlm2session_resp)
 {
-    bzero(lm_resp, 24);
+    memset(lm_resp, 0, 24);
     memmove(lm_resp, client_nonce, 8);
         
     byte session_nonce[16];
-    bzero(session_nonce, 16);
+    memset(session_nonce, 0, 16);
     concat(challenge, 8, client_nonce, 8, session_nonce);
     
     byte ntlm2session_hash[8];
-    bzero(ntlm2session_hash, 8);
+    memset(ntlm2session_hash, 0, 8);
     calc_ntlm2session_hash(session_nonce, ntlm2session_hash);
     
     
     byte ntlmv1_hash_padded[21];
-    bzero(ntlmv1_hash_padded, 21);
+    memset(ntlmv1_hash_padded, 0, 21);
 
     byte ntlmv1_hash[MD4_DIGEST_LENGTH]; // 16-byte
-    bzero(ntlmv1_hash, MD4_DIGEST_LENGTH);
+    memset(ntlmv1_hash, 0, MD4_DIGEST_LENGTH);
     calc_ntlmv1_hash(password, ntlmv1_hash);
     
-    bzero(ntlmv1_hash_padded, 21);
+    memset(ntlmv1_hash_padded, 0, 21);
     memmove(ntlmv1_hash_padded, ntlmv1_hash, MD4_DIGEST_LENGTH);
     
     byte* ntlm2session_resp1 = ntlm2session_resp;
@@ -303,19 +302,19 @@ void calc_lmv2_resp(string username, string password, string domain, const byte*
 {
     
     byte client_nonce[8];
-    bzero(client_nonce, 8);
+    memset(client_nonce, 0, 8);
     create_client_nonce(client_nonce, 8);
 
     byte data[16];
-    bzero(data, 16);
+    memset(data, 0, 16);
     concat(client_nonce, 8, challenge, 8, data);
     
     byte ntlmv2_hash[16];
-    bzero(ntlmv2_hash, 16);
+    memset(ntlmv2_hash, 0, 16);
     calc_ntlmv2_hash(username, password, domain, ntlmv2_hash);
     
     byte hmac[16];
-    bzero(hmac,16);
+    memset(hmac, 0, 16);
     hmac_md5_enc((void*)ntlmv2_hash, 16, data, 16, hmac, 16);
     
     concat(hmac, 16, client_nonce, 8, lmv2_resp);
@@ -326,7 +325,7 @@ void calc_ntlmv2_resp(string username, string password, string domain, const byt
 
     size_t blob_len = 28 + target_info_len; //the blob fixed len + target_info_len
     byte* blob = new byte[blob_len];
-    bzero(blob, blob_len);
+    memset(blob, 0, blob_len);
     create_blob(target_info, target_info_len, blob, blob_len);
     
     size_t challenge_len = 8;
@@ -335,11 +334,11 @@ void calc_ntlmv2_resp(string username, string password, string domain, const byt
     concat(challenge, challenge_len, blob, blob_len, data);
     
     byte ntlmv2_hash[16];
-    bzero(ntlmv2_hash, 16);
+    memset(ntlmv2_hash, 0, 16);
     calc_ntlmv2_hash(username, password, domain, ntlmv2_hash);
     
     byte hmac[16];
-    bzero(hmac,16);
+    memset(hmac, 0, 16);
     hmac_md5_enc((void*)ntlmv2_hash, 16, data, data_len, hmac, 16);
 
     concat(hmac, 16, blob, blob_len, ntlmv2_resp); 
@@ -348,7 +347,7 @@ void calc_ntlmv2_resp(string username, string password, string domain, const byt
 
 void calc_ntlmv1_hash(string password, byte* ntlmv1_hash)
 {
-    bzero(ntlmv1_hash, MD4_DIGEST_LENGTH);
+    memset(ntlmv1_hash, 0, MD4_DIGEST_LENGTH);
     size_t unicode_pwd_len = password.length() *2;
     char* unicode_pwd = new char[unicode_pwd_len];
     
@@ -365,7 +364,7 @@ void calc_ntlm2session_hash(byte* session_nonce, byte* session_hash)
 {
     //session_nonce is 16-byte
     //session_hash is 8 byte
-    bzero(session_hash, 8);
+    memset(session_hash, 0, 8);
     byte md5_nonce[16];
     md5_enc(session_nonce, 16, md5_nonce);
     memmove(session_hash, md5_nonce, 8);
@@ -374,10 +373,10 @@ void calc_ntlm2session_hash(byte* session_nonce, byte* session_hash)
 void calc_ntlmv2_hash(string username, string password, string domain, byte* ntlmv2_hash)
 {
     
-    bzero(ntlmv2_hash, 16);
+    memset(ntlmv2_hash, 0, 16);
     
     byte ntlmv1_hash[MD4_DIGEST_LENGTH]; 
-    bzero(ntlmv1_hash, MD4_DIGEST_LENGTH);
+    memset(ntlmv1_hash, 0, MD4_DIGEST_LENGTH);
     calc_ntlmv1_hash(password, ntlmv1_hash);
     
     size_t unicode_name_dom_len = username.length() * 2 + domain.length() * 2;
@@ -394,7 +393,7 @@ void calc_ntlmv2_hash(string username, string password, string domain, byte* ntl
 
 void create_client_nonce(byte* nonce, size_t len)
 {
-    bzero(nonce, len);
+    memset(nonce, 0, len);
     if(8 != len)
     {
         return;
@@ -428,7 +427,7 @@ void create_blob(const byte* target_info, uint16_t target_info_len, byte* blob, 
     * 28            Target Information  Target Information block (from the Type 2 message).
     * (variable)    Unknown             4 bytes
     */
-    bzero(blob, blob_len);
+    memset(blob, 0, blob_len);
     if (28 + target_info_len != blob_len)
     {
         return;
@@ -436,11 +435,11 @@ void create_blob(const byte* target_info, uint16_t target_info_len, byte* blob, 
 
     unsigned long long timestamp = create_timestamp();
     byte client_nonce[8];
-    bzero(client_nonce, 8);
+    memset(client_nonce, 0, 8);
     create_client_nonce(client_nonce, 8);
     
     //byte *blob = new byte[blob_len];
-    bzero(blob, blob_len);
+    memset(blob, 0, blob_len);
     blob[0] = 0x1;
     blob[1] = 0x1;
     memmove(blob + 8, &timestamp, 8);
@@ -459,7 +458,7 @@ void setup_security_buffer(uint16_t &temp_len,uint32_t &temp_off, uint16_t &msg_
 
 Message2Handle::Message2Handle(const string & msg2_b64_buff)
 {
-    bzero(&msg2, MSG2_SIZE);
+    memset(&msg2, 0, MSG2_SIZE);
     msg2_buff = NULL;
     size_t msg2_buff_len = BASE64_DECODE_LENGTH(msg2_b64_buff.length());
     msg2_buff = new byte[msg2_buff_len];    
