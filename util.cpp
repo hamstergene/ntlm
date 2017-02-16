@@ -124,7 +124,7 @@ unsigned long long create_timestamp()
     unsigned long long win_unix_time_diff = 11644473600ULL;
     unsigned long long timestamp;
     time_t cur = time(NULL);
-    time_t win_cur = cur + win_unix_time_diff;
+    unsigned long long win_cur = cur + win_unix_time_diff;
     timestamp = (unsigned long long) win_cur * windows_tick;
     
     return timestamp;

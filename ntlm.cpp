@@ -1,7 +1,6 @@
 #include "ntlm.h"
 #include "openssl/rand.h"
 #include <cstring>
-#include <stdio.h>
 #include <strings.h>
 
 string make_type1_msg(string domain, string host, int ntlm_resp_type)
@@ -12,6 +11,7 @@ string make_type1_msg(string domain, string host, int ntlm_resp_type)
     size_t hst_len = upper_host.length();    
     
     struct Type1Message msg1;
+    bzero(&msg1, MSG1_SIZE);
     
     strcpy(msg1.signature, ASCII_STR(NTLMSSP_SIGNATURE));
     
@@ -48,7 +48,7 @@ string make_type1_msg(string domain, string host, int ntlm_resp_type)
     char *buff_base64 = new char[base64_len];
     bzero(buff_base64, base64_len);
     base64_encode(buff, buff_base64, buff_size);
-    buff_base64[base64_len] = '\0';
+    buff_base64[base64_len - 1] = '\0';
     string result(buff_base64);
     
     delete []buff;
@@ -68,6 +68,7 @@ string make_type3_msg(string username, string password, string domain, string ho
     bool support_unicode = msg2_handle.support_unicode();
     
     struct Type3Message msg3;
+    bzero(&msg3, MSG3_SIZE);
     uint16_t lm_challenge_resp_len, nt_challenge_resp_len, dom_len, usr_name_len, hst_len;
     uint32_t lm_challenge_resp_off, nt_challenge_resp_off, dom_off, usr_name_off, hst_off;
         
@@ -458,6 +459,7 @@ void setup_security_buffer(uint16_t &temp_len,uint32_t &temp_off, uint16_t &msg_
 
 Message2Handle::Message2Handle(const string & msg2_b64_buff)
 {
+    bzero(&msg2, MSG2_SIZE);
     msg2_buff = NULL;
     size_t msg2_buff_len = BASE64_DECODE_LENGTH(msg2_b64_buff.length());
     msg2_buff = new byte[msg2_buff_len];    
@@ -474,7 +476,6 @@ Message2Handle::~Message2Handle()
 
 const byte* Message2Handle::get_challenge()
 {
-    return msg2.challenge;
     return msg2.challenge;
 }
 

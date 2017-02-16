@@ -5,6 +5,7 @@
 //  [2][http://davenport.sourceforge.net/ntlm.html]
 
 #include "util.h"
+
 // The negotiate message
 struct Type1Message 
 {
