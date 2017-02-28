@@ -17,12 +17,14 @@ using namespace std;
 typedef unsigned char byte;
 typedef unsigned short int uint16_t;
 typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
 
 string to_uppercase(const string& s);
 
 bool is_big_endian();
 uint16_t to_little_endian(uint16_t i_data);
 uint32_t to_little_endian(uint32_t i_data);
+uint64_t to_little_endian(uint64_t i_data);
 
 
 void des_enc(byte* key, DES_cblock* data, DES_cblock* result);
@@ -32,7 +34,7 @@ void hmac_md5_enc(void* key, int key_len, byte* data, int data_len, byte* digest
 
 void ascii_to_unicode(string ascii_str, char *unicode_str);
 void concat(const byte* data1, size_t data1_len, const byte* data2, size_t data2_len, byte* result);
-unsigned long long create_timestamp();
+uint64_t create_timestamp();
 
 
 void base64_encode(const char *src, char *dst, size_t length);

@@ -433,7 +433,7 @@ void create_blob(const byte* target_info, uint16_t target_info_len, byte* blob, 
         return;
     }
 
-    unsigned long long timestamp = create_timestamp();
+    uint64_t timestamp = create_timestamp();
     byte client_nonce[8];
     memset(client_nonce, 0, 8);
     create_client_nonce(client_nonce, 8);
@@ -464,6 +464,18 @@ Message2Handle::Message2Handle(const string & msg2_b64_buff)
     msg2_buff = new byte[msg2_buff_len];    
     base64_decode(msg2_b64_buff.c_str(), msg2_buff);
     memmove(&msg2, msg2_buff, MSG2_SIZE);
+    if(is_big_endian())
+    {
+        msg2.type = to_little_endian(msg2.type);
+        msg2.target_name_len = to_little_endian(msg2.target_name_len);
+        msg2.target_name_max_len = to_little_endian(msg2.target_name_max_len);
+        msg2.target_name_off = to_little_endian(msg2.target_name_off);
+        msg2.flag = to_little_endian(msg2.flag);
+        msg2.target_info_len = to_little_endian(msg2.target_info_len);
+        msg2.target_info_max_len = to_little_endian(msg2.target_info_max_len);
+        msg2.target_info_off = to_little_endian(msg2.target_info_off);
+    }
+    
 }
 Message2Handle::~Message2Handle()
 {

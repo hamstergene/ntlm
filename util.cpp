@@ -53,6 +53,25 @@ uint32_t to_little_endian(uint32_t i_data)
 	return o_data;
 }
 
+uint64_t to_little_endian(uint64_t i_data)
+{
+    if(!is_big_endian())
+	{
+		return i_data;
+	}
+	uint64_t o_data;
+	byte* pi = (byte*)&i_data;
+	byte* po = (byte*)&o_data;
+	
+	size_t i = 0;
+	for(i = 0; i < 8; ++i)
+	{
+	    po[i] = pi[7 - i];
+	}
+	
+	return o_data;
+}
+
 void setup_des_key(unsigned char key_56[], DES_key_schedule &ks) {
 	DES_cblock key;
 
@@ -98,13 +117,8 @@ void hmac_md5_enc(void* key, int key_len, byte* data, int data_len, byte* digest
 void ascii_to_unicode(string ascii_str, char *unicode_str)
 {
 	for (size_t i = 0; i < ascii_str.length(); i++) {
-		if (is_big_endian()) {
-			unicode_str[2*i] = '\0';
-			unicode_str[2*i +1] = ASCII_CHAR(ascii_str[i]);
-		}else {
-			unicode_str[2*i] = ASCII_CHAR(ascii_str[i]);
-			unicode_str[2*i +1] = '\0';
-		}
+		unicode_str[2*i] = ASCII_CHAR(ascii_str[i]);
+		unicode_str[2*i +1] = '\0';
 	}
 }
 
@@ -114,18 +128,23 @@ void concat(const byte* data1, size_t data1_len, const byte* data2, size_t data2
     memmove(result + data1_len, data2, data2_len);
 }
 
-unsigned long long create_timestamp()
+uint64_t create_timestamp()
 {
     /*
     * calc Timestamp
     * the windows epoch starts 1601-01-01T00:00:00Z. It's 11644473600 seconds before the UNIX/Linux epoch (1970-01-01T00:00:00Z). The Windows ticks are in 100 nanoseconds. 
     */	
-    unsigned long long windows_tick = 10000000;
-    unsigned long long win_unix_time_diff = 11644473600ULL;
-    unsigned long long timestamp;
+    uint64_t windows_tick = 10000000;
+    uint64_t win_unix_time_diff = 11644473600ULL;
+    uint64_t timestamp;
     time_t cur = time(NULL);
-    unsigned long long win_cur = cur + win_unix_time_diff;
-    timestamp = (unsigned long long) win_cur * windows_tick;
+    uint64_t win_cur = cur + win_unix_time_diff;
+    timestamp = (uint64_t) win_cur * windows_tick;
+    
+    if(is_big_endian())
+    {
+        timestamp = to_little_endian(timestamp);
+    }
     
     return timestamp;
 }
