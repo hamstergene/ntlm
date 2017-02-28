@@ -464,6 +464,12 @@ Message2Handle::Message2Handle(const string & msg2_b64_buff)
     msg2_buff = new byte[msg2_buff_len];    
     base64_decode(msg2_b64_buff.c_str(), msg2_buff);
     memmove(&msg2, msg2_buff, MSG2_SIZE);
+    /*
+    * following is a tricky part
+    * the memmove directly may cause:
+    * some little endian data was recognized as big endian data in big endian machine
+    * so,just call toLittleEndian() in TmAuDIUtil could solve
+    */
     if(is_big_endian())
     {
         msg2.type = to_little_endian(msg2.type);
