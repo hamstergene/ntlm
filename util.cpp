@@ -1,15 +1,15 @@
 #include "util.h"
 
-string to_uppercase(const string& s)
+std::string to_uppercase(const std::string& s)
 {
     if(s.length() == 0){
-		return string("");
+		return std::string("");
 	}
 	char* buf = new char[s.length()];
 	s.copy(buf, s.length());
 	for(unsigned int i = 0; i < s.length(); i++)
 		buf[i] = static_cast<char>(toupper(buf[i]));
-	string r(buf, s.length());
+	std::string r(buf, s.length());
 	delete [] buf;
 	return r;
 }
@@ -17,7 +17,7 @@ string to_uppercase(const string& s)
 bool is_big_endian()
 {
 	uint32_t data = 0x11223344;
-	byte* pdata = (byte*)&data;
+	uint8_t* pdata = (uint8_t*)&data;
 	return pdata[0] == 0x11;
 }
 
@@ -28,8 +28,8 @@ uint16_t to_little_endian(uint16_t i_data)
 		return i_data;
 	}
 	uint16_t o_data;
-	byte* pi = (byte*)&i_data;
-	byte* po = (byte*)&o_data;
+	uint8_t* pi = (uint8_t*)&i_data;
+	uint8_t* po = (uint8_t*)&o_data;
 	
 	po[0] = pi[1];
 	po[1] = pi[0];
@@ -43,8 +43,8 @@ uint32_t to_little_endian(uint32_t i_data)
 		return i_data;
 	}
 	uint32_t o_data;
-	byte* pi = (byte*)&i_data;
-	byte* po = (byte*)&o_data;
+	uint8_t* pi = (uint8_t*)&i_data;
+	uint8_t* po = (uint8_t*)&o_data;
 	
 	po[0] = pi[3];
 	po[1] = pi[2];
@@ -60,8 +60,8 @@ uint64_t to_little_endian(uint64_t i_data)
 		return i_data;
 	}
 	uint64_t o_data;
-	byte* pi = (byte*)&i_data;
-	byte* po = (byte*)&o_data;
+	uint8_t* pi = (uint8_t*)&i_data;
+	uint8_t* po = (uint8_t*)&o_data;
 	
 	size_t i = 0;
 	for(i = 0; i < 8; ++i)
@@ -88,24 +88,24 @@ void setup_des_key(unsigned char key_56[], DES_key_schedule &ks) {
 	DES_set_key(&key, &ks);
 }
 
-void des_enc(byte* key, DES_cblock* data, DES_cblock* result)
+void des_enc(uint8_t* key, DES_cblock* data, DES_cblock* result)
 {
     DES_key_schedule ks;
     setup_des_key(key, ks);
     DES_ecb_encrypt(data, result, &ks, DES_ENCRYPT);
 }
 
-void md4_enc(byte* data, size_t data_len, byte* result)
+void md4_enc(uint8_t* data, size_t data_len, uint8_t* result)
 {
     MD4(data, data_len, result);
 }
 
-void md5_enc(byte* data, size_t data_len, byte* result)
+void md5_enc(uint8_t* data, size_t data_len, uint8_t* result)
 {
     MD5(data, data_len, result);  
 }
 
-void hmac_md5_enc(void* key, int key_len, byte* data, int data_len, byte* digest, unsigned int digest_len)
+void hmac_md5_enc(void* key, int key_len, uint8_t* data, int data_len, uint8_t* digest, unsigned int digest_len)
 {
     HMAC_CTX * hmac_ctx = HMAC_CTX_new();
     HMAC_Init_ex(hmac_ctx, key, key_len, EVP_md5(), NULL);
@@ -114,7 +114,7 @@ void hmac_md5_enc(void* key, int key_len, byte* data, int data_len, byte* digest
     HMAC_CTX_free(hmac_ctx);
 }
 
-void ascii_to_unicode(string ascii_str, char *unicode_str)
+void ascii_to_unicode(std::string ascii_str, char *unicode_str)
 {
 	for (size_t i = 0; i < ascii_str.length(); i++) {
 		unicode_str[2*i] = ASCII_CHAR(ascii_str[i]);
@@ -122,7 +122,7 @@ void ascii_to_unicode(string ascii_str, char *unicode_str)
 	}
 }
 
-void concat(const byte* data1, size_t data1_len, const byte* data2, size_t data2_len, byte* result)
+void concat(const uint8_t* data1, size_t data1_len, const uint8_t* data2, size_t data2_len, uint8_t* result)
 {
     memmove(result, data1, data1_len);
     memmove(result + data1_len, data2, data2_len);
@@ -149,7 +149,7 @@ uint64_t create_timestamp()
     return timestamp;
 }
 
-size_t base64_decode(const char *src, byte *dst) {
+size_t base64_decode(const char *src, uint8_t *dst) {
     BIO *bio, *b64;
 
     bio = BIO_new_mem_buf(src, -1);
@@ -159,7 +159,7 @@ size_t base64_decode(const char *src, byte *dst) {
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); 
     size_t decode_len = BIO_read(bio, (void*)dst, strlen(src));
     BIO_free_all(bio);
-
+    return decode_len;
 }
 
 void base64_encode (const char *src, char *dst, size_t length) {
