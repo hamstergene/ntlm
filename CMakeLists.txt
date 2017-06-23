@@ -10,6 +10,11 @@ add_library(${PROJECT_NAME}
     util.h
 )
 
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+        -Werror
+)
+
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         "${PROJECT_SOURCE_DIR}/include"
@@ -18,7 +23,7 @@ target_include_directories(${PROJECT_NAME}
         "${OPENSSL_INCLUDE_DIR}"
 )
 
-target_compile_options(${PROJECT_NAME}
-    PRIVATE
-        -Werror
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        "${OPENSSL_LIBRARIES}"
 )
