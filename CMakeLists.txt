@@ -1,10 +1,12 @@
 project(ntlm)
 
-find_package(OpenSSL 1.1 REQUIRED)
+set(OPENSSL_USE_STATIC_LIBS ON )
+find_package(OpenSSL REQUIRED )
 
 add_library(${PROJECT_NAME}
     ntlm.cpp
     util.cpp
+    libcrypto-compat.c
 
     include/ntlm/ntlm.h
     util.h
@@ -15,7 +17,7 @@ target_compile_options(${PROJECT_NAME}
         -Werror
 )
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(${PROJECT_NAME} BEFORE
     PUBLIC
         "${PROJECT_SOURCE_DIR}/include"
 
